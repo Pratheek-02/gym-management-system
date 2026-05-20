@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIAL
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  UPI
+  BANK_TRANSFER
+  OTHER
+}
+
+enum NoteType {
+  GENERAL
+  MONITORING
+  HEALTH
+  PAYMENT
+}
+
+model MembershipPlan {
+  id          String   @id @default(cuid())
+  name        String
+  monthlyFee  Float
+  description String?
+  clients     Client[]
+  createdAt   DateTime @default(now())
+}
+
+model Client {
+  id               String          @id @default(cuid())
+  name             String
+  email            String?
+  phone            String
+  address          String?
+  emergencyContact String?
+  joinDate         DateTime        @default(now())
+  status           ClientStatus    @default(ACTIVE)
+  monthlyFee       Float
+  membershipPlanId String?
+  membershipPlan   MembershipPlan? @relation(fields: [membershipPlanId], references: [id])
+  invoices         FeeInvoice[]
+  payments         Payment[]
+  checkIns         CheckIn[]
+  notes            ClientNote[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model FeeInvoice {
+  id          String        @id @default(cuid())
+  clientId    String
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  amount      Float
+  amountPaid  Float         @default(0)
+  dueDate     DateTime
+  periodStart DateTime
+  periodEnd   DateTime
+  status      InvoiceStatus @default(PENDING)
+  description String?
+  payments    Payment[]
+  createdAt   DateTime      @default(now())
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  clientId     String
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  feeInvoiceId String?
+  feeInvoice   FeeInvoice?   @relation(fields: [feeInvoiceId], references: [id])
+  amount       Float
+  method       PaymentMethod @default(CASH)
+  paidAt       DateTime      @default(now())
+  reference    String?
+  notes        String?
+  createdAt    DateTime      @default(now())
+}
+
+model CheckIn {
+  id          String    @id @default(cuid())
+  clientId    String
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  checkedInAt DateTime  @default(now())
+  checkedOutAt DateTime?
+}
+
+model ClientNote {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  content   String
+  type      NoteType @default(GENERAL)
+  createdAt DateTime @default(now())
+}
+
+model GymSettings {
+  id           String   @id @default("default")
+  gymName      String   @default("Fitness Garage")
+  tagline      String   @default("Gym Management System")
+  phone        String?
+  email        String?
+  address      String?
+  currency     String   @default("INR")
+  feeDueDay    Int      @default(10)
+  openingHours String?
+  footerNote   String?
+  updatedAt    DateTime @updatedAt
+}
