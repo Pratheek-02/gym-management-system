@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: fitness-garage
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        value: file:/data/prod.db
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: fitness-garage-data
+      mountPath: /data
+      sizeGB: 1

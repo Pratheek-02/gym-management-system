@@ -68,3 +68,37 @@ To reset and re-seed:
 npx prisma migrate reset
 npx tsx prisma/seed.ts
 ```
+
+## Deploy online
+
+This app uses SQLite and needs **persistent storage**. Use **Railway** or **Render** (not Vercel serverless).
+
+### Railway (fastest)
+
+```bash
+npm i -g @railway/cli
+railway login
+cd d:\FitnessGarrage
+railway init
+railway volume add --mount-path /data
+```
+
+Set variable in Railway dashboard:
+
+```
+DATABASE_URL=file:/data/prod.db
+```
+
+Then deploy:
+
+```bash
+railway up
+```
+
+### Render
+
+1. Push this folder to GitHub
+2. [render.com](https://render.com) → **New** → **Blueprint** → connect repo
+3. Uses `render.yaml` (Docker + 1GB disk at `/data`)
+
+Full details: [DEPLOY.md](./DEPLOY.md)
